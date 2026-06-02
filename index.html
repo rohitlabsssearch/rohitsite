@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Predictor 4.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a1a0a;display:flex;justify-content:center;min-height:100vh}
+  .app{width:100%;max-width:420px;font-family:'Rajdhani',sans-serif;position:relative;overflow:hidden;min-height:100vh}
+  .screen{display:none;width:100%;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;position:relative}
+  .screen.active{display:flex}
+
+  /* CORNERS */
+  .corner{position:absolute;width:40px;height:40px;border-color:#00ff41;border-style:solid}
+  .corner-tl{top:20px;left:20px;border-width:3px 0 0 3px}
+  .corner-tr{top:20px;right:20px;border-width:3px 3px 0 0}
+  .corner-bl{bottom:20px;left:20px;border-width:0 0 3px 3px}
+  .corner-br{bottom:20px;right:20px;border-width:0 3px 3px 0}
+  .scan-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00ff4133,transparent);animation:scan 3s linear infinite;z-index:0}
+  @keyframes scan{0%{top:0}100%{top:100%}}
+
+  /* SPLASH */
+  #splash{background:radial-gradient(circle at 50% 40%, #0d3d0d 0%, #0a1a0a 70%)}
+  .avatar-ring{border-radius:50%;border:3px solid #00ff41;padding:4px;box-shadow:0 0 30px #00ff4144;animation:pulse 1.5s infinite;position:relative;z-index:1}
+  .avatar-ring img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+  @keyframes pulse{0%,100%{box-shadow:0 0 20px #00ff4144}50%{box-shadow:0 0 50px #00ff4199}}
+  .loading-bar{width:220px;height:3px;background:#1a3a1a;border-radius:2px;margin-top:30px;overflow:hidden;position:relative;z-index:1}
+  .loading-fill{height:100%;background:#00ff41;border-radius:2px;animation:load 2.5s linear forwards}
+  @keyframes load{0%{width:0}100%{width:100%}}
+
+  /* MAIN */
+  #main{background:radial-gradient(circle at 50% 35%, #0d3d0d 0%, #0a1a0a 65%)}
+  .version-box{border:1px solid #00ff41;padding:6px 20px;font-family:'Orbitron',monospace;font-size:11px;color:#00ff41;letter-spacing:3px;margin-bottom:15px;position:relative;z-index:1}
+  .pred-title{font-family:'Orbitron',monospace;font-size:42px;font-weight:900;color:#fff;letter-spacing:4px;text-shadow:0 0 20px #00ff4144;line-height:1;position:relative;z-index:1}
+  .pred-num{font-family:'Orbitron',monospace;font-size:52px;font-weight:900;color:#ff3333;text-shadow:0 0 25px #ff333366;position:relative;z-index:1}
+  .subtitle{color:#888;font-size:12px;letter-spacing:3px;text-align:center;margin:10px 0 25px;position:relative;z-index:1}
+  .status-box{border:1px solid #00ff41;padding:10px 30px;color:#00ff41;font-size:14px;letter-spacing:2px;display:flex;align-items:center;gap:8px;margin-bottom:30px;position:relative;z-index:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:#00ff41;animation:blink 1s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+  .btn-activate{width:100%;background:#00ff41;color:#000;font-family:'Orbitron',monospace;font-size:16px;font-weight:700;letter-spacing:3px;padding:16px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;position:relative;z-index:1}
+  .btn-activate:hover{background:#33ff66;transform:scale(1.02)}
+  .btn-activate:active{transform:scale(0.98)}
+  .btn-channel{width:100%;background:transparent;border:1px solid #00ff41;color:#00ff41;font-family:'Orbitron',monospace;font-size:13px;letter-spacing:2px;padding:12px;cursor:pointer;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;position:relative;z-index:1}
+  .btn-channel:hover{background:#00ff4111}
+  .footer-wrap{margin-top:10px;text-align:center;position:relative;z-index:1;width:100%}
+  .footer-txt{font-size:10px;color:#333;letter-spacing:2px;font-family:'Orbitron',monospace;margin-bottom:6px}
+  .btn-enter-key{width:100%;background:transparent;border:1px solid #7c3aed;color:#a78bfa;font-family:'Orbitron',monospace;font-size:13px;letter-spacing:2px;padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s}
+  .btn-enter-key:hover{background:#7c3aed22}
+
+  /* PAYMENT */
+  #payment{background:radial-gradient(circle at 50% 50%, #1a1a3d 0%, #0d0d1a 70%)}
+  .pay-scan{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#ff8c0033,transparent);animation:scan 3s linear infinite}
+  .pay-title{font-family:'Orbitron',monospace;color:#ff8c00;font-size:20px;font-weight:700;letter-spacing:3px;margin-bottom:5px;position:relative;z-index:1}
+  .pay-sub{color:#555;font-size:12px;letter-spacing:2px;margin-bottom:10px;position:relative;z-index:1}
+  .qr-frame{width:240px;height:240px;border:3px solid #ff8c00;padding:8px;background:#111;position:relative;margin:15px 0;z-index:1}
+  .qr-frame img{width:100%;height:100%;object-fit:cover}
+  .qr-corner{position:absolute;width:20px;height:20px;border-color:#ff8c00;border-style:solid}
+  .qr-corner.tl{top:-2px;left:-2px;border-width:4px 0 0 4px}
+  .qr-corner.tr{top:-2px;right:-2px;border-width:4px 4px 0 0}
+  .qr-corner.bl{bottom:-2px;left:-2px;border-width:0 0 4px 4px}
+  .qr-corner.br{bottom:-2px;right:-2px;border-width:0 4px 4px 0}
+  .upi-box{background:#1a1a2e;border:1px solid #ff8c00;padding:10px 20px;text-align:center;color:#fff;font-size:13px;letter-spacing:1px;margin-bottom:6px;position:relative;z-index:1}
+  .pay-amount{color:#ffd700;font-family:'Orbitron',monospace;font-size:20px;font-weight:700;letter-spacing:2px;position:relative;z-index:1}
+  .btn-after-pay{width:100%;background:transparent;border:1px solid #7c3aed;color:#a78bfa;font-family:'Orbitron',monospace;font-size:12px;letter-spacing:2px;padding:12px;cursor:pointer;margin-top:12px;transition:all 0.2s;position:relative;z-index:1}
+  .btn-after-pay:hover{background:#7c3aed22}
+  .btn-back{background:transparent;border:none;color:#444;font-size:12px;cursor:pointer;margin-top:10px;letter-spacing:1px;font-family:'Rajdhani',sans-serif;position:relative;z-index:1;transition:color 0.2s}
+  .btn-back:hover{color:#888}
+
+  /* KEY PAGE */
+  #keypage{background:radial-gradient(circle at 50% 40%, #1a0d2e 0%, #0d0d1a 70%)}
+  .key-scan{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#7c3aed33,transparent);animation:scan 3s linear infinite}
+  .key-icon{font-size:44px;margin-bottom:12px;position:relative;z-index:1}
+  .key-title{font-family:'Orbitron',monospace;color:#a78bfa;font-size:22px;font-weight:700;letter-spacing:3px;margin-bottom:6px;position:relative;z-index:1}
+  .key-sub{color:#555;font-size:12px;letter-spacing:2px;margin-bottom:25px;position:relative;z-index:1}
+  .key-input{width:100%;background:#111;border:1px solid #7c3aed;color:#a78bfa;font-family:'Orbitron',monospace;font-size:15px;letter-spacing:3px;padding:14px 16px;outline:none;text-align:center;transition:border 0.2s;position:relative;z-index:1}
+  .key-input:focus{border-color:#a78bfa;box-shadow:0 0 15px #7c3aed44}
+  .btn-unlock{width:100%;background:#7c3aed;color:#fff;font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:3px;padding:14px;border:none;cursor:pointer;margin-top:10px;transition:all 0.2s;position:relative;z-index:1}
+  .btn-unlock:hover{background:#9d5fff}
+  .btn-unlock:active{transform:scale(0.98)}
+  .key-error{color:#ff4444;font-size:12px;letter-spacing:1px;margin-top:8px;min-height:18px;position:relative;z-index:1;font-family:'Orbitron',monospace}
+
+  /* PREDICTOR */
+  #predictor{background:radial-gradient(circle at 50% 30%, #0d3d0d 0%, #0a1a0a 70%)}
+  .pred-active-label{font-family:'Orbitron',monospace;color:#00ff41;font-size:14px;font-weight:700;letter-spacing:4px;margin-bottom:25px;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
+  .period-label{color:#444;font-size:11px;letter-spacing:3px;font-family:'Orbitron',monospace;margin-bottom:8px;position:relative;z-index:1}
+  .period-input{width:100%;background:#0d1a0d;border:1px solid #1a4d1a;color:#00ff41;font-family:'Orbitron',monospace;font-size:15px;letter-spacing:2px;padding:14px 16px;outline:none;text-align:center;transition:border 0.2s;position:relative;z-index:1}
+  .period-input:focus{border-color:#00ff41;box-shadow:0 0 15px #00ff4122}
+  .btn-check{width:100%;background:#00ff41;color:#000;font-family:'Orbitron',monospace;font-size:20px;font-weight:900;letter-spacing:4px;padding:16px;border:none;cursor:pointer;transition:all 0.2s;margin-top:12px;position:relative;z-index:1}
+  .btn-check:hover{background:#33ff66;transform:scale(1.02)}
+  .btn-check:active{transform:scale(0.98)}
+  .result-box{width:100%;margin-top:20px;padding:28px 20px;border:2px solid transparent;text-align:center;display:none;animation:popIn 0.4s ease;position:relative;z-index:1}
+  .result-box.big{border-color:#ff4444;background:#1a0505}
+  .result-box.small{border-color:#00ff41;background:#051a05}
+  .result-word{font-family:'Orbitron',monospace;font-size:56px;font-weight:900;letter-spacing:6px}
+  .result-box.big .result-word{color:#ff4444;text-shadow:0 0 30px #ff444488}
+  .result-box.small .result-word{color:#00ff41;text-shadow:0 0 30px #00ff4188}
+  .result-period{font-size:11px;color:#444;letter-spacing:2px;margin-top:10px;font-family:'Orbitron',monospace}
+  @keyframes popIn{0%{transform:scale(0.7);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+  .btn-reset{background:transparent;border:1px solid #1a3a1a;color:#444;font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;padding:8px 24px;cursor:pointer;margin-top:12px;transition:all 0.2s;position:relative;z-index:1}
+  .btn-reset:hover{border-color:#00ff41;color:#00ff41}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SPLASH SCREEN -->
+  <div id="splash" class="screen active">
+    <div class="scan-line"></div>
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <div class="avatar-ring" style="width:170px;height:170px">
+      <!-- APNI PHOTO KA PATH YAHAN DALO -->
+      <img src="avatar.png" alt="Predictor" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'width:162px;height:162px;border-radius:50%;background:linear-gradient(135deg,#1a3a5c,#0d6b8a);display:flex;align-items:center;justify-content:center;font-size:70px\'>🎮</div>'">
+    </div>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
+  </div>
+
+  <!-- MAIN SCREEN -->
+  <div id="main" class="screen">
+    <div class="scan-line"></div>
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <div class="avatar-ring" style="width:140px;height:140px;margin-bottom:18px">
+      <img src="avatar.png" alt="Predictor" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'width:132px;height:132px;border-radius:50%;background:linear-gradient(135deg,#1a3a5c,#0d6b8a);display:flex;align-items:center;justify-content:center;font-size:55px\'>🎮</div>'">
+    </div>
+    <div class="version-box">· VERSION 4.0 ·</div>
+    <div class="pred-title">PREDICTOR</div>
+    <div class="pred-num">4.0</div>
+    <div class="subtitle">ALL GAMES CONNECTED · DIRECT API SERVER</div>
+    <div class="status-box"><div class="dot"></div>SYSTEM ONLINE</div>
+    <button class="btn-activate" onclick="show('payment')">ACTIVATE ▶</button>
+    <button class="btn-channel" onclick="window.open('https://t.me/+3mJrvqDZCbxhNzll','_blank')">📢 JOIN CHANNEL</button>
+    <div class="footer-wrap">
+      <div class="footer-txt">PREDICTOR V4.0.0</div>
+      <button class="btn-enter-key" onclick="show('keypage')">🔑 ENTER KEY</button>
+    </div>
+  </div>
+
+  <!-- PAYMENT SCREEN -->
+  <div id="payment" class="screen">
+    <div class="pay-scan"></div>
+    <div class="pay-title">ACTIVATE</div>
+    <div class="pay-sub">SCAN TO PAY</div>
+    <div class="qr-frame">
+      <!-- APNA QR CODE IMAGE YAHAN: src="qr.png" -->
+      <img src="qr.png" alt="QR Code" onerror="this.outerHTML='<div style=\'width:100%;height:100%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:90px\'>📱</div>'">
+      <div class="qr-corner tl"></div>
+      <div class="qr-corner tr"></div>
+      <div class="qr-corner bl"></div>
+      <div class="qr-corner br"></div>
+    </div>
+    <!-- APNA UPI ID YAHAN DALO -->
+    <div class="upi-box">UPI ID: <span style="color:#ffd700">Mohitvrma1@fam</span></div>
+    <div class="pay-amount">PAY ₹799 TO ACTIVATE!</div>
+    <button class="btn-after-pay" onclick="show('keypage')">🔑 ENTER KEY AFTER PAYMENT</button>
+    <button class="btn-back" onclick="show('main')">← BACK</button>
+  </div>
+
+  <!-- KEY PAGE -->
+  <div id="keypage" class="screen">
+    <div class="key-scan"></div>
+    <div class="key-icon">🔑</div>
+    <div class="key-title">ENTER KEY</div>
+    <div class="key-sub">PASTE YOUR ACCESS KEY</div>
+    <input class="key-input" id="keyInput" type="text" placeholder="XXXX-XXXX-XXXX" autocomplete="off" />
+    <div class="key-error" id="keyError"></div>
+    <button class="btn-unlock" onclick="checkKey()">UNLOCK ▶</button>
+    <button class="btn-back" onclick="show('payment')" style="margin-top:12px">← BACK</button>
+  </div>
+
+  <!-- PREDICTOR SCREEN -->
+  <div id="predictor" class="screen">
+    <div class="scan-line"></div>
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <div class="pred-active-label"><div class="dot"></div>PREDICTOR ACTIVE</div>
+    <div class="period-label">ENTER PERIOD NUMBER</div>
+    <input class="period-input" id="periodInput" type="text" placeholder="xxx" autocomplete="off" />
+    <button class="btn-check" onclick="predict()">CHECK</button>
+    <div class="result-box" id="resultBox">
+      <div class="result-word" id="resultWord"></div>
+      <div class="result-period" id="resultPeriod"></div>
+    </div>
+    <button class="btn-reset" onclick="resetResult()" id="resetBtn" style="display:none">↺ CHECK AGAIN</button>
+  </div>
+
+</div>
+
+<script>
+  // Auto splash → main
+  setTimeout(() => show('main'), 2800);
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  // KEY CHECK — change kar sakte ho
+  const ACCESS_KEY = 'rohitpredicts123';
+
+  function checkKey() {
+    const val = document.getElementById('keyInput').value.trim().toLowerCase();
+    if (val === ACCESS_KEY.toLowerCase()) {
+      document.getElementById('keyError').textContent = '';
+      show('predictor');
+    } else {
+      document.getElementById('keyError').textContent = '✗ INVALID KEY — TRY AGAIN';
+      document.getElementById('keyInput').style.borderColor = '#ff4444';
+      setTimeout(() => {
+        document.getElementById('keyInput').style.borderColor = '#7c3aed';
+      }, 1000);
+    }
+  }
+
+  document.getElementById('keyInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkKey();
+  });
+
+  function predict() {
+    const period = document.getElementById('periodInput').value.trim();
+    if (!period) {
+      document.getElementById('periodInput').style.borderColor = '#ff4444';
+      setTimeout(() => document.getElementById('periodInput').style.borderColor = '#1a4d1a', 800);
+      return;
+    }
+    // Hash based on period number
+    let hash = 0;
+    for (let i = 0; i < period.length; i++) {
+      hash = ((hash << 5) - hash) + period.charCodeAt(i);
+      hash |= 0;
+    }
+    const isBig = (Math.abs(hash) % 2) === 0;
+    const box = document.getElementById('resultBox');
+    const word = document.getElementById('resultWord');
+    const pLabel = document.getElementById('resultPeriod');
+    box.className = 'result-box ' + (isBig ? 'big' : 'small');
+    word.textContent = isBig ? 'BIG' : 'SMALL';
+    pLabel.textContent = 'PERIOD: ' + period;
+    box.style.display = 'block';
+    document.getElementById('resetBtn').style.display = 'inline-block';
+  }
+
+  document.getElementById('periodInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') predict();
+  });
+
+  function resetResult() {
+    document.getElementById('resultBox').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'none';
+    document.getElementById('periodInput').value = '';
+    document.getElementById('periodInput').focus();
+  }
+</script>
+</body>
+</html>
