@@ -84,7 +84,7 @@
   /* PREDICTOR */
   #predictor{background:radial-gradient(circle at 50% 30%, #0b1026 0%, #050816 70%)}
   .pred-active-label{font-family:'Orbitron',monospace;color:#00bfff;font-size:14px;font-weight:700;letter-spacing:4px;margin-bottom:25px;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
-  .period-label{color:#444;font-size:11px;letter-spacing:3px;font-family:'Orbitron',monospace;margin-bottom:8px;position:relative;z-index:1}
+  .period-label{color:#d21818;font-size:11px;letter-spacing:3px;font-family:'Orbitron',monospace;margin-bottom:8px;position:relative;z-index:1}
   .period-input{width:100%;background:#0d1a0d;border:1px solid #1a3d7a;color:#00bfff;font-family:'Orbitron',monospace;font-size:15px;letter-spacing:2px;padding:14px 16px;outline:none;text-align:center;transition:border 0.2s;position:relative;z-index:1}
   .period-input:focus{border-color:#00bfff;box-shadow:0 0 15px #00bfff22}
   .btn-check{width:100%;background:#00bfff;color:#000;font-family:'Orbitron',monospace;font-size:20px;font-weight:900;letter-spacing:4px;padding:16px;border:none;cursor:pointer;transition:all 0.2s;margin-top:12px;position:relative;z-index:1}
@@ -100,6 +100,11 @@
   @keyframes popIn{0%{transform:scale(0.7);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
   .btn-reset{background:transparent;border:1px solid #112244;color:#444;font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;padding:8px 24px;cursor:pointer;margin-top:12px;transition:all 0.2s;position:relative;z-index:1}
   .btn-reset:hover{border-color:#00bfff;color:#00bfff}
+  #timerBox{
+text-shadow:0 0 15px #00ff88;
+font-weight:700;
+animation:blink 1s infinite;
+}
 </style>
 </head>
 <body>
@@ -182,8 +187,35 @@
     <div class="corner corner-bl"></div>
     <div class="corner corner-br"></div>
     <div class="pred-active-label"><div class="dot"></div>PREDICTOR ACTIVE</div>
-    <div class="period-label">ENTER PERIOD NUMBER</div>
-    <input class="period-input" id="periodInput" type="text" placeholder="xxx" autocomplete="off" />
+    <div class="period-label">CLICK ON CHECK TO SEE THE NEXT RESULT.....</div>
+    <div id="timerBox"
+style="
+color:#00ff88;
+font-family:'Orbitron',monospace;
+font-size:22px;
+font-weight:700;
+text-align:center;
+margin-bottom:12px;
+text-shadow:0 0 15px #00ff88;
+">
+⏱ Loading...
+</div>
+    <div id="timerBox" style="
+margin-bottom:10px;
+font-family:'Orbitron',monospace;
+color:#00ff88;
+font-size:18px;
+letter-spacing:2px;
+text-align:center;">
+
+</div>
+<input
+class="period-input"
+id="periodInput"
+type="text"
+readonly
+placeholder="Loading..."
+/>
     <button class="btn-check" onclick="predict()">CHECK</button>
     <div class="result-box" id="resultBox">
       <div class="result-word" id="resultWord"></div>
@@ -253,12 +285,73 @@
     if (e.key === 'Enter') predict();
   });
 
-  function resetResult() {
-    document.getElementById('resultBox').style.display = 'none';
-    document.getElementById('resetBtn').style.display = 'none';
-    document.getElementById('periodInput').value = '';
-    document.getElementById('periodInput').focus();
+ function resetResult() {
+  document.getElementById('resultBox').style.display = 'none';
+  document.getElementById('resetBtn').style.display = 'none';
+}
+// AUTO PERIOD FETCH
+
+async function updatePeriod() {
+  try {
+    const response = await fetch(
+      "https://draw.ar-lottery01.com/WinGo/WinGo_30S.json?t=" + Date.now()
+    );
+
+    const data = await response.json();
+
+    if (data.current && data.current.issueNumber) {
+      document.getElementById("periodInput").value =
+        data.current.issueNumber;
+    }
+
+  } catch (err) {
+    console.log("Period Fetch Error:", err);
   }
+}
+
+let currentEndTime = 0;
+
+async function updatePeriod() {
+  try {
+    const response = await fetch(
+      "https://draw.ar-lottery01.com/WinGo/WinGo_30S.json?t=" + Date.now()
+    );
+
+    const data = await response.json();
+
+    document.getElementById("periodInput").value =
+      data.current.issueNumber;
+
+    currentEndTime = data.current.endTime;
+
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+function startLiveTimer() {
+
+  setInterval(() => {
+
+    if (!currentEndTime) return;
+
+    const now = Date.now();
+    let remaining = Math.floor((currentEndTime - now) / 1000);
+
+    if (remaining < 0) remaining = 0;
+
+    document.getElementById("timerBox").innerHTML =
+      "⏱ " + remaining + "s";
+
+  }, 250);
+
+}
+
+updatePeriod();
+startLiveTimer();
+
+setInterval(updatePeriod, 2000);
+
 </script>
 </body>
 </html>
