@@ -3,355 +3,669 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Predictor 4.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Predictor PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#050816;display:flex;justify-content:center;min-height:100vh}
-  .app{width:100%;max-width:420px;font-family:'Rajdhani',sans-serif;position:relative;overflow:hidden;min-height:100vh}
-  .screen{display:none;width:100%;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;position:relative}
-  .screen.active{display:flex}
-
-  /* CORNERS */
-  .corner{position:absolute;width:40px;height:40px;border-color:#00bfff;border-style:solid}
-  .corner-tl{top:20px;left:20px;border-width:3px 0 0 3px}
-  .corner-tr{top:20px;right:20px;border-width:3px 3px 0 0}
-  .corner-bl{bottom:20px;left:20px;border-width:0 0 3px 3px}
-  .corner-br{bottom:20px;right:20px;border-width:0 3px 3px 0}
-  .scan-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00bfff33,transparent);animation:scan 3s linear infinite;z-index:0}
-  @keyframes scan{0%{top:0}100%{top:100%}}
-
-  /* SPLASH */
-  #splash{background:radial-gradient(circle at 50% 40%, #0b1026 0%, #050816 70%)}
-  .avatar-ring{border-radius:50%;border:3px solid #00bfff;padding:4px;box-shadow:0 0 30px #00bfff44;animation:pulse 1.5s infinite;position:relative;z-index:1}
-  .avatar-ring img{width:100%;height:100%;border-radius:100%;object-fit:cover;display:block}
-  @keyframes pulse{0%,100%{box-shadow:0 0 20px #00bfff44}50%{box-shadow:0 0 50px #00bfff99}}
-  .loading-bar{width:220px;height:3px;background:#112244;border-radius:2px;margin-top:30px;overflow:hidden;position:relative;z-index:1}
-  .loading-fill{height:100%;background:#00bfff;border-radius:2px;animation:load 2.5s linear forwards}
-  @keyframes load{0%{width:0}100%{width:100%}}
-
-  /* MAIN */
-  #main{background:radial-gradient(circle at 50% 35%, #0b1026 0%, #050816 65%)}
-  .version-box{border:1px solid #00bfff;padding:6px 20px;font-family:'Orbitron',monospace;font-size:11px;color:#00bfff;letter-spacing:3px;margin-bottom:15px;position:relative;z-index:1}
-  .pred-title{font-family:'Orbitron',monospace;font-size:42px;font-weight:900;color:#fff;letter-spacing:4px;text-shadow:0 0 20px #00bfff44;line-height:1;position:relative;z-index:1}
-  .pred-num{font-family:'Orbitron',monospace;font-size:52px;font-weight:900;color:#ff3333;text-shadow:0 0 25px #ff333366;position:relative;z-index:1}
-  .subtitle{color:#888;font-size:12px;letter-spacing:3px;text-align:center;margin:10px 0 25px;position:relative;z-index:1}
-  .status-box{border:1px solid #00bfff;padding:10px 30px;color:#00bfff;font-size:14px;letter-spacing:2px;display:flex;align-items:center;gap:8px;margin-bottom:30px;position:relative;z-index:1}
-  .dot{width:8px;height:8px;border-radius:50%;background:#00bfff;animation:blink 1s infinite}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
-  .btn-activate{width:100%;background:#00bfff;color:#000;font-family:'Orbitron',monospace;font-size:16px;font-weight:700;letter-spacing:3px;padding:16px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;position:relative;z-index:1}
-  .btn-activate:hover{background:#33ccff;transform:scale(1.02)}
-  .btn-activate:active{transform:scale(0.98)}
-  .btn-channel{width:100%;background:transparent;border:1px solid #00bfff;color:#00bfff;font-family:'Orbitron',monospace;font-size:13px;letter-spacing:2px;padding:12px;cursor:pointer;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;position:relative;z-index:1}
-  .btn-channel:hover{background:#00bfff11}
-  .footer-wrap{margin-top:10px;text-align:center;position:relative;z-index:1;width:100%}
-  .footer-txt{font-size:10px;color:#333;letter-spacing:2px;font-family:'Orbitron',monospace;margin-bottom:6px}
-  .btn-enter-key{width:100%;background:transparent;border:1px solid #7c3aed;color:#a78bfa;font-family:'Orbitron',monospace;font-size:13px;letter-spacing:2px;padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s}
-  .btn-enter-key:hover{background:#7c3aed22}
-
-  /* PAYMENT */
-  #payment{background:radial-gradient(circle at 50% 50%, #1a1a3d 0%, #0d0d1a 70%)}
-  .pay-scan{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#ff8c0033,transparent);animation:scan 3s linear infinite}
-  .pay-title{font-family:'Orbitron',monospace;color:#ff8c00;font-size:20px;font-weight:700;letter-spacing:3px;margin-bottom:5px;position:relative;z-index:1}
-  .pay-sub{color:#555;font-size:12px;letter-spacing:2px;margin-bottom:10px;position:relative;z-index:1}
-  .qr-frame{width:240px;height:240px;border:3px solid #ff8c00;padding:8px;background:#111;position:relative;margin:15px 0;z-index:1}
-  .qr-frame img{width:100%;height:100%;object-fit:cover}
-  .qr-corner{position:absolute;width:20px;height:20px;border-color:#ff8c00;border-style:solid}
-  .qr-corner.tl{top:-2px;left:-2px;border-width:4px 0 0 4px}
-  .qr-corner.tr{top:-2px;right:-2px;border-width:4px 4px 0 0}
-  .qr-corner.bl{bottom:-2px;left:-2px;border-width:0 0 4px 4px}
-  .qr-corner.br{bottom:-2px;right:-2px;border-width:0 4px 4px 0}
-  .upi-box{background:#1a1a2e;border:1px solid #ff8c00;padding:10px 20px;text-align:center;color:#fff;font-size:13px;letter-spacing:1px;margin-bottom:6px;position:relative;z-index:1}
-  .pay-amount{color:#ffd700;font-family:'Orbitron',monospace;font-size:20px;font-weight:700;letter-spacing:2px;position:relative;z-index:1}
-  .btn-after-pay{width:100%;background:transparent;border:1px solid #7c3aed;color:#a78bfa;font-family:'Orbitron',monospace;font-size:12px;letter-spacing:2px;padding:12px;cursor:pointer;margin-top:12px;transition:all 0.2s;position:relative;z-index:1}
-  .btn-after-pay:hover{background:#7c3aed22}
-  .btn-back{background:transparent;border:none;color:#444;font-size:12px;cursor:pointer;margin-top:10px;letter-spacing:1px;font-family:'Rajdhani',sans-serif;position:relative;z-index:1;transition:color 0.2s}
-  .btn-back:hover{color:#888}
-
-  /* KEY PAGE */
-  #keypage{background:radial-gradient(circle at 50% 40%, #1a0d2e 0%, #0d0d1a 70%)}
-  .key-scan{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#7c3aed33,transparent);animation:scan 3s linear infinite}
-  .key-icon{font-size:44px;margin-bottom:12px;position:relative;z-index:1}
-  .key-title{font-family:'Orbitron',monospace;color:#a78bfa;font-size:22px;font-weight:700;letter-spacing:3px;margin-bottom:6px;position:relative;z-index:1}
-  .key-sub{color:#555;font-size:12px;letter-spacing:2px;margin-bottom:25px;position:relative;z-index:1}
-  .key-input{width:100%;background:#111;border:1px solid #7c3aed;color:#a78bfa;font-family:'Orbitron',monospace;font-size:15px;letter-spacing:3px;padding:14px 16px;outline:none;text-align:center;transition:border 0.2s;position:relative;z-index:1}
-  .key-input:focus{border-color:#a78bfa;box-shadow:0 0 15px #7c3aed44}
-  .btn-unlock{width:100%;background:#7c3aed;color:#fff;font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:3px;padding:14px;border:none;cursor:pointer;margin-top:10px;transition:all 0.2s;position:relative;z-index:1}
-  .btn-unlock:hover{background:#9d5fff}
-  .btn-unlock:active{transform:scale(0.98)}
-  .key-error{color:#ff4444;font-size:12px;letter-spacing:1px;margin-top:8px;min-height:18px;position:relative;z-index:1;font-family:'Orbitron',monospace}
-
-  /* PREDICTOR */
-  #predictor{background:radial-gradient(circle at 50% 30%, #0b1026 0%, #050816 70%)}
-  .pred-active-label{font-family:'Orbitron',monospace;color:#00bfff;font-size:14px;font-weight:700;letter-spacing:4px;margin-bottom:25px;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
-  .period-label{color:#d21818;font-size:11px;letter-spacing:3px;font-family:'Orbitron',monospace;margin-bottom:8px;position:relative;z-index:1}
-  .period-input{width:100%;background:#0d1a0d;border:1px solid #1a3d7a;color:#00bfff;font-family:'Orbitron',monospace;font-size:15px;letter-spacing:2px;padding:14px 16px;outline:none;text-align:center;transition:border 0.2s;position:relative;z-index:1}
-  .period-input:focus{border-color:#00bfff;box-shadow:0 0 15px #00bfff22}
-  .btn-check{width:100%;background:#00bfff;color:#000;font-family:'Orbitron',monospace;font-size:20px;font-weight:900;letter-spacing:4px;padding:16px;border:none;cursor:pointer;transition:all 0.2s;margin-top:12px;position:relative;z-index:1}
-  .btn-check:hover{background:#33ccff;transform:scale(1.02)}
-  .btn-check:active{transform:scale(0.98)}
-  .result-box{width:100%;margin-top:20px;padding:28px 20px;border:2px solid transparent;text-align:center;display:none;animation:popIn 0.4s ease;position:relative;z-index:1}
-  .result-box.big{border-color:#ff4444;background:#1a0505}
-  .result-box.small{border-color:#00bfff;background:#051a05}
-  .result-word{font-family:'Orbitron',monospace;font-size:56px;font-weight:900;letter-spacing:6px}
-  .result-box.big .result-word{color:#ff4444;text-shadow:0 0 30px #ff444488}
-  .result-box.small .result-word{color:#00bfff;text-shadow:0 0 30px #00bfff88}
-  .result-period{font-size:11px;color:#444;letter-spacing:2px;margin-top:10px;font-family:'Orbitron',monospace}
-  @keyframes popIn{0%{transform:scale(0.7);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
-  .btn-reset{background:transparent;border:1px solid #112244;color:#444;font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;padding:8px 24px;cursor:pointer;margin-top:12px;transition:all 0.2s;position:relative;z-index:1}
-  .btn-reset:hover{border-color:#00bfff;color:#00bfff}
-  #timerBox{
-text-shadow:0 0 15px #00ff88;
-font-weight:700;
-animation:blink 1s infinite;
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#060a12;
+  --bg2:#0d1220;
+  --bg3:#111827;
+  --cyan:#22d3ee;
+  --pink:#f472b6;
+  --green:#4ade80;
+  --red:#f87171;
+  --gold:#fbbf24;
+  --purple:#a78bfa;
+  --border:#1e2d45;
+  --text:#e2e8f0;
+  --muted:#64748b;
 }
+body{background:var(--bg);font-family:'Space Grotesk',sans-serif;display:flex;justify-content:center;min-height:100vh;overflow-x:hidden}
+.app{width:100%;max-width:430px;min-height:100vh;position:relative}
+
+/* PARTICLE CANVAS */
+#particleCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.5}
+
+/* SCREENS */
+.screen{display:none;width:100%;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;position:relative;overflow:hidden;opacity:0;transition:opacity 0.4s ease}
+.screen.active{display:flex}
+.screen.visible{opacity:1}
+
+/* BG EFFECTS */
+.glow-orb{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+.orb1{width:320px;height:320px;background:rgba(34,211,238,0.06);top:-100px;right:-100px}
+.orb2{width:280px;height:280px;background:rgba(167,139,250,0.05);bottom:-80px;left:-80px}
+.orb3{width:200px;height:200px;background:rgba(244,114,182,0.04);top:40%;left:50%;transform:translate(-50%,-50%)}
+
+/* GRID */
+.grid-bg{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(34,211,238,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,0.025) 1px,transparent 1px);background-size:44px 44px}
+
+/* ─── SPLASH ─── */
+#splash{background:var(--bg)}
+.splash-wrap{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:24px}
+.avatar-shell{position:relative;width:140px;height:140px}
+.avatar-shell .spin-ring{position:absolute;inset:-6px;border-radius:50%;background:conic-gradient(from 0deg,transparent 30%,var(--cyan) 50%,var(--purple) 70%,transparent 100%);animation:spinRing 1.8s linear infinite}
+.avatar-shell .spin-ring2{position:absolute;inset:-12px;border-radius:50%;background:conic-gradient(from 180deg,transparent 30%,var(--pink) 50%,transparent 70%);animation:spinRing 3s linear infinite reverse;opacity:0.5}
+.avatar-shell .av-inner{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:var(--bg3);border:2px solid var(--bg)}
+.avatar-shell .av-inner img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+@keyframes spinRing{to{transform:rotate(360deg)}}
+.splash-tagline{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:6px}
+.splash-progress-wrap{width:220px}
+.splash-track{height:2px;background:var(--border);border-radius:2px;overflow:hidden}
+.splash-fill{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:2px;transition:width 0.1s linear}
+.splash-nums{display:flex;justify-content:space-between;margin-top:6px}
+.splash-nums span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+#splashPct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan)}
+.splash-status-row{display:flex;gap:16px;margin-top:4px}
+.splash-tick{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;opacity:0;transition:opacity 0.3s}
+.splash-tick.on{opacity:1;color:var(--green)}
+.splash-tick::before{content:'●';font-size:7px}
+
+/* ─── MAIN ─── */
+#main{background:var(--bg)}
+.brand-chip{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;background:rgba(34,211,238,0.07);border:1px solid rgba(34,211,238,0.18);padding:6px 14px;border-radius:100px;margin-bottom:18px}
+.dot-live{width:6px;height:6px;border-radius:50%;background:var(--green);animation:livePulse 1.5s infinite}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.6)}50%{box-shadow:0 0 0 5px rgba(74,222,128,0)}}
+.brand-chip span{font-size:10px;color:var(--cyan);letter-spacing:2px;font-family:'JetBrains Mono',monospace}
+.main-avatar-wrap{position:relative;z-index:1;margin-bottom:10px}
+.main-avatar-wrap img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(34,211,238,0.35);display:block}
+.main-title{position:relative;z-index:1;font-size:50px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1;text-align:center}
+.main-title span{background:linear-gradient(135deg,var(--cyan) 0%,var(--purple) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.main-badge-row{position:relative;z-index:1;display:flex;gap:6px;margin:10px 0 24px;flex-wrap:wrap;justify-content:center}
+.mbadge{font-size:9px;letter-spacing:1px;padding:4px 10px;border-radius:100px;font-family:'JetBrains Mono',monospace;border:1px solid}
+.mbadge.cyan{color:var(--cyan);border-color:rgba(34,211,238,0.3);background:rgba(34,211,238,0.06)}
+.mbadge.green{color:var(--green);border-color:rgba(74,222,128,0.3);background:rgba(74,222,128,0.06)}
+.mbadge.gold{color:var(--gold);border-color:rgba(251,191,36,0.3);background:rgba(251,191,36,0.06)}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:100%;margin-bottom:24px;position:relative;z-index:1}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px 8px;text-align:center;position:relative;overflow:hidden;transition:border-color 0.2s}
+.stat-card:hover{border-color:rgba(34,211,238,0.3)}
+.stat-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0.4}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--cyan);margin-bottom:3px}
+.stat-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.btn-primary{position:relative;z-index:1;width:100%;background:linear-gradient(135deg,#22d3ee,#0891b2);color:#000;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;padding:16px;border:none;border-radius:14px;cursor:pointer;transition:all 0.25s;margin-bottom:10px;overflow:hidden}
+.btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);opacity:0;transition:opacity 0.2s}
+.btn-primary:hover::after{opacity:1}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(34,211,238,0.3)}
+.btn-primary:active{transform:scale(0.97)}
+.btn-outline{position:relative;z-index:1;width:100%;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:500;padding:13px;border-radius:14px;cursor:pointer;transition:all 0.2s;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-outline:hover{border-color:rgba(34,211,238,0.4);color:var(--cyan);background:rgba(34,211,238,0.04)}
+.btn-ghost{position:relative;z-index:1;width:100%;background:transparent;border:1px solid rgba(167,139,250,0.25);color:var(--purple);font-family:'Space Grotesk',sans-serif;font-size:13px;padding:12px;border-radius:14px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-ghost:hover{background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.5)}
+.divider-line{position:relative;z-index:1;width:100%;display:flex;align-items:center;gap:10px;margin:12px 0}
+.divider-line::before,.divider-line::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider-line span{font-size:10px;color:var(--muted);letter-spacing:2px;white-space:nowrap}
+
+/* ─── PAYMENT ─── */
+#payment{background:var(--bg);justify-content:flex-start;padding-top:50px;overflow-y:auto}
+.pay-header{position:relative;z-index:1;text-align:center;margin-bottom:20px;width:100%}
+.pay-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);color:var(--gold);font-size:10px;letter-spacing:2px;padding:5px 12px;border-radius:100px;margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.pay-title{font-size:26px;font-weight:700;color:var(--text)}
+.pay-title span{color:var(--gold)}
+.pay-subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+.plan-card{position:relative;z-index:1;width:100%;background:linear-gradient(135deg,rgba(251,191,36,0.06),rgba(17,24,39,0.8));border:1px solid rgba(251,191,36,0.25);border-radius:14px;padding:12px 14px;margin-bottom:12px;overflow:hidden}
+.plan-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.plan-name{font-size:15px;font-weight:700;color:var(--text)}
+.plan-name small{display:block;font-size:9px;color:var(--muted);font-weight:400;margin-top:1px;letter-spacing:1px}
+.plan-price-wrap{text-align:right}
+.plan-price{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--gold);line-height:1}
+.plan-mrp{font-size:10px;color:var(--muted);text-decoration:line-through;font-family:'JetBrains Mono',monospace}
+.plan-save{font-size:9px;color:var(--green);letter-spacing:1px;font-family:'JetBrains Mono',monospace}
+.plan-features{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.feature{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.feature .fcheck{width:14px;height:14px;border-radius:50%;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.3);display:flex;align-items:center;justify-content:center;font-size:7px;color:var(--green);flex-shrink:0}
+.qr-container{position:relative;z-index:1;width:100%;background:var(--bg3);border:1px solid rgba(251,191,36,0.2);border-radius:16px;padding:16px;display:flex;flex-direction:column;align-items:center;margin-bottom:12px}
+.qr-label{font-size:9px;color:var(--muted);letter-spacing:3px;font-family:'JetBrains Mono',monospace;margin-bottom:12px}
+.qr-frame{position:relative;padding:8px;background:#fff;border-radius:10px}
+.qr-frame img{width:180px;height:180px;object-fit:contain;display:block;border-radius:4px}
+.qr-corner-dot{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--gold)}
+.qr-corner-dot.tl{top:-4px;left:-4px}
+.qr-corner-dot.tr{top:-4px;right:-4px}
+.qr-corner-dot.bl{bottom:-4px;left:-4px}
+.qr-corner-dot.br{bottom:-4px;right:-4px}
+.pay-upi-row{width:100%;display:flex;align-items:center;justify-content:space-between;margin-top:10px;background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.15);border-radius:10px;padding:10px 14px}
+.upi-id-txt{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold)}
+.copy-btn{background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.25);color:var(--gold);font-size:9px;padding:5px 10px;border-radius:6px;cursor:pointer;letter-spacing:1px;font-family:'JetBrains Mono',monospace;transition:all 0.2s}
+.copy-btn:hover{background:rgba(251,191,36,0.25)}
+.pay-amount-big{position:relative;z-index:1;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);text-align:center;margin-bottom:12px;letter-spacing:1px}
+.pay-amount-big span{color:var(--gold);font-size:18px;font-weight:700}
+.btn-pay-done{position:relative;z-index:1;width:100%;background:linear-gradient(135deg,var(--purple),#6d28d9);color:#fff;font-size:15px;font-weight:700;padding:16px;border:none;border-radius:14px;cursor:pointer;transition:all 0.25s;margin-bottom:8px;letter-spacing:0.5px;overflow:hidden}
+.btn-pay-done::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0.08);opacity:0;transition:opacity 0.2s}
+.btn-pay-done:hover::after{opacity:1}
+.btn-pay-done:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(167,139,250,0.35)}
+.btn-back-sm{position:relative;z-index:1;background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:8px;font-family:'Space Grotesk',sans-serif;transition:color 0.2s}
+.btn-back-sm:hover{color:var(--text)}
+
+/* ─── KEY PAGE ─── */
+#keypage{background:var(--bg)}
+.key-header{position:relative;z-index:1;text-align:center;margin-bottom:32px}
+.key-icon-wrap{width:76px;height:76px;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.25);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 16px;position:relative}
+.key-icon-wrap::after{content:'';position:absolute;inset:-1px;border-radius:22px;background:linear-gradient(135deg,rgba(167,139,250,0.3),transparent,rgba(34,211,238,0.15));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:1px}
+.key-title{font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px}
+.key-subtitle{font-size:11px;color:var(--muted);letter-spacing:2px}
+.key-dots{display:flex;justify-content:center;gap:6px;margin-top:10px}
+.key-dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--border);transition:all 0.2s}
+.key-dot.active{background:var(--purple);border-color:var(--purple)}
+.input-wrap{position:relative;z-index:1;width:100%;margin-bottom:8px}
+.input-wrap input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:17px;letter-spacing:4px;padding:16px;border-radius:14px;outline:none;text-align:center;transition:all 0.2s}
+.input-wrap input:focus{border-color:var(--purple);background:rgba(167,139,250,0.04);box-shadow:0 0 0 3px rgba(167,139,250,0.1)}
+.input-wrap input::placeholder{letter-spacing:2px;color:var(--muted);font-size:12px}
+.err-msg{position:relative;z-index:1;color:var(--red);font-size:11px;letter-spacing:1px;min-height:16px;text-align:center;margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.btn-unlock{position:relative;z-index:1;width:100%;background:linear-gradient(135deg,var(--purple),#6d28d9);color:#fff;font-size:15px;font-weight:700;padding:16px;border:none;border-radius:14px;cursor:pointer;transition:all 0.25s;letter-spacing:0.5px}
+.btn-unlock:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(167,139,250,0.35)}
+.btn-unlock:active{transform:scale(0.97)}
+
+/* ─── PREDICTOR ─── */
+#predictor{background:var(--bg);justify-content:flex-start;padding-top:48px;overflow-y:auto}
+
+/* topbar */
+.pred-topbar{position:relative;z-index:1;width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.pred-status{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--green);letter-spacing:1px;font-family:'JetBrains Mono',monospace}
+.pred-status .d{width:6px;height:6px;border-radius:50%;background:var(--green);animation:livePulse 1.5s infinite}
+.topbar-right{display:flex;align-items:center;gap:6px}
+.session-badge{background:rgba(34,211,238,0.07);border:1px solid rgba(34,211,238,0.15);color:var(--cyan);font-size:9px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:100px;letter-spacing:1px}
+.pro-badge{background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(251,191,36,0.05));border:1px solid rgba(251,191,36,0.3);color:var(--gold);font-size:9px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:100px;letter-spacing:1px}
+
+/* timer block — big centered card */
+.timer-card{position:relative;z-index:1;width:100%;background:linear-gradient(135deg,rgba(34,211,238,0.05),rgba(17,24,39,0.6));border:1px solid rgba(34,211,238,0.12);border-radius:22px;padding:22px 20px 18px;display:flex;align-items:center;gap:18px;margin-bottom:14px;overflow:hidden}
+.timer-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(34,211,238,0.4),transparent)}
+.ring-wrap{position:relative;width:100px;height:100px;flex-shrink:0}
+.ring-wrap svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:5}
+.ring-fill{fill:none;stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset 0.25s linear,stroke 0.5s}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700;color:var(--cyan);line-height:1}
+.ring-sec{font-size:8px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace;margin-top:1px}
+.timer-info{flex:1;min-width:0}
+.timer-info-label{font-size:9px;color:var(--muted);letter-spacing:3px;font-family:'JetBrains Mono',monospace;margin-bottom:6px}
+.timer-info-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:10px}
+.timer-mini-stats{display:flex;gap:8px}
+.tms{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:5px 8px;text-align:center}
+.tms-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--cyan)}
+.tms-label{font-size:8px;color:var(--muted);letter-spacing:1px}
+
+/* period box */
+.period-card{position:relative;z-index:1;width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.period-card-left{font-size:9px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace}
+.period-val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--cyan);letter-spacing:1px}
+.period-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:livePulse 2s infinite;flex-shrink:0}
+
+/* predict btn */
+.btn-predict{position:relative;z-index:1;width:100%;background:linear-gradient(135deg,#22d3ee,#0891b2);color:#000;font-size:18px;font-weight:700;letter-spacing:3px;padding:18px;border:none;border-radius:18px;cursor:pointer;transition:all 0.25s;font-family:'Space Grotesk',sans-serif;overflow:hidden;margin-bottom:14px}
+.btn-predict::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);transition:left 0.6s}
+.btn-predict:hover::before{left:150%}
+.btn-predict:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(34,211,238,0.4)}
+.btn-predict:active{transform:scale(0.97)}
+.btn-predict span{opacity:0.7;font-size:13px;margin-left:6px}
+
+/* result */
+.result-section{position:relative;z-index:1;width:100%;display:none}
+.result-card{border-radius:24px;padding:24px 20px 20px;text-align:center;position:relative;overflow:hidden;animation:resultPop 0.55s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes resultPop{0%{opacity:0;transform:scale(0.6) translateY(30px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+.result-card.big{background:linear-gradient(160deg,rgba(248,113,113,0.1),rgba(17,24,39,0.6));border:1px solid rgba(248,113,113,0.35)}
+.result-card.small{background:linear-gradient(160deg,rgba(34,211,238,0.1),rgba(17,24,39,0.6));border:1px solid rgba(34,211,238,0.3)}
+.result-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px}
+.result-card.big::before{background:linear-gradient(90deg,transparent,rgba(248,113,113,0.6),transparent)}
+.result-card.small::before{background:linear-gradient(90deg,transparent,rgba(34,211,238,0.5),transparent)}
+.result-glow{position:absolute;inset:0;pointer-events:none}
+.result-card.big .result-glow{background:radial-gradient(ellipse at 50% 0%,rgba(248,113,113,0.18),transparent 55%)}
+.result-card.small .result-glow{background:radial-gradient(ellipse at 50% 0%,rgba(34,211,238,0.14),transparent 55%)}
+.result-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.result-chip{display:inline-flex;align-items:center;gap:4px;font-size:9px;letter-spacing:2px;padding:4px 12px;border-radius:100px;font-family:'JetBrains Mono',monospace;border:1px solid}
+.result-card.big .result-chip{background:rgba(248,113,113,0.12);border-color:rgba(248,113,113,0.35);color:var(--red)}
+.result-card.small .result-chip{background:rgba(34,211,238,0.1);border-color:rgba(34,211,238,0.3);color:var(--cyan)}
+.result-period-top{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:1px}
+.result-word{font-family:'JetBrains Mono',monospace;font-size:72px;font-weight:700;letter-spacing:6px;line-height:1;margin-bottom:4px}
+.result-card.big .result-word{color:var(--red)}
+.result-card.small .result-word{color:var(--cyan)}
+.result-word-sub{font-size:10px;letter-spacing:4px;font-family:'JetBrains Mono',monospace;margin-bottom:16px}
+.result-card.big .result-word-sub{color:rgba(248,113,113,0.5)}
+.result-card.small .result-word-sub{color:rgba(34,211,238,0.4)}
+.result-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:0}
+.rstat{border-radius:10px;padding:8px 6px;text-align:center;border:1px solid}
+.result-card.big .rstat{background:rgba(248,113,113,0.06);border-color:rgba(248,113,113,0.15)}
+.result-card.small .rstat{background:rgba(34,211,238,0.05);border-color:rgba(34,211,238,0.12)}
+.rstat-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;margin-bottom:2px}
+.result-card.big .rstat-val{color:var(--red)}
+.result-card.small .rstat-val{color:var(--cyan)}
+.rstat-label{font-size:8px;color:var(--muted);letter-spacing:1px}
+
+.btn-again{position:relative;z-index:1;width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:12px;border-radius:14px;cursor:pointer;margin-top:10px;transition:all 0.2s;font-family:'JetBrains Mono',monospace;letter-spacing:2px;display:none}
+.btn-again:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* TOAST */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:12px;padding:10px 20px;border-radius:100px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;opacity:0;transition:all 0.3s;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* CONFETTI */
+.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:999;animation:confettiFall linear forwards}
+@keyframes confettiFall{0%{opacity:1;transform:translateY(-20px) rotate(0deg)}100%{opacity:0;transform:translateY(100vh) rotate(720deg)}}
 </style>
 </head>
 <body>
+<canvas id="particleCanvas"></canvas>
 <div class="app">
 
-  <!-- SPLASH SCREEN -->
-  <div id="splash" class="screen active">
-    <div class="scan-line"></div>
-    <div class="corner corner-tl"></div>
-    <div class="corner corner-tr"></div>
-    <div class="corner corner-bl"></div>
-    <div class="corner corner-br"></div>
-    <div class="avatar-ring" style="width:170px;height:170px">
-      <!-- APNI PHOTO KA PATH YAHAN DALO -->
-      <img src="avatar.png" alt="Predictor" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'width:162px;height:162px;border-radius:50%;background:linear-gradient(135deg,#1a3a5c,#0d6b8a);display:flex;align-items:center;justify-content:center;font-size:70px\'>🎮</div>'">
+<!-- SPLASH -->
+<div id="splash" class="screen active">
+  <div class="grid-bg"></div>
+  <div class="glow-orb orb1"></div>
+  <div class="glow-orb orb2"></div>
+  <div class="splash-wrap">
+    <div class="avatar-shell">
+      <div class="spin-ring"></div>
+      <div class="spin-ring2"></div>
+      <div class="av-inner">
+        <img src="avatar.png" alt="Logo" onerror="this.outerHTML='<div style=\'width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#0891b2,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:48px\'>⚡</div>'">
+      </div>
     </div>
-    <div class="loading-bar"><div class="loading-fill"></div></div>
-  </div>
-
-  <!-- MAIN SCREEN -->
-  <div id="main" class="screen">
-    <div class="scan-line"></div>
-    <div class="corner corner-tl"></div>
-    <div class="corner corner-tr"></div>
-    <div class="corner corner-bl"></div>
-    <div class="corner corner-br"></div>
-    <div class="avatar-ring" style="width:140px;height:140px;margin-bottom:18px">
-      <img src="avatar.png" alt="Predictor" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'width:132px;height:132px;border-radius:50%;background:linear-gradient(135deg,#1a3a5c,#0d6b8a);display:flex;align-items:center;justify-content:center;font-size:55px\'>🎮</div>'">
+    <div class="splash-tagline">PREDICTOR PRO</div>
+    <div class="splash-progress-wrap">
+      <div class="splash-track"><div class="splash-fill" id="splashFill"></div></div>
+      <div class="splash-nums"><span>INITIALIZING</span><span id="splashPct">0%</span></div>
     </div>
-    <div class="version-box">· VERSION 4.0 ·</div>
-    <div class="pred-title">PREDICTOR</div>
-    <div class="pred-num">ELITE</div>
-    <div class="subtitle">ALL GAMES CONNECTED · DIRECT API SERVER</div>
-    <div class="status-box"><div class="dot"></div>SYSTEM ONLINE</div>
-    <button class="btn-activate" onclick="show('payment')">ACTIVATE ▶</button>
-    <button class="btn-channel" onclick="window.open('https://t.me/+3mJrvqDZCbxhNzll','_blank')">📢 JOIN CHANNEL</button>
-    <div class="footer-wrap">
-      <div class="footer-txt">PREDICTOR V4.0.0</div>
-      <button class="btn-enter-key" onclick="show('keypage')">🔑 ENTER KEY</button>
+    <div class="splash-status-row">
+      <div class="splash-tick" id="st1">API SERVER</div>
+      <div class="splash-tick" id="st2">LIVE DATA</div>
+      <div class="splash-tick" id="st3">READY</div>
     </div>
   </div>
+</div>
 
-  <!-- PAYMENT SCREEN -->
-  <div id="payment" class="screen">
-    <div class="pay-scan"></div>
-    <div class="pay-title">ACTIVATE</div>
-    <div class="pay-sub">SCAN TO PAY</div>
+<!-- MAIN -->
+<div id="main" class="screen">
+  <div class="grid-bg"></div>
+  <div class="glow-orb orb1"></div>
+  <div class="glow-orb orb2"></div>
+  <div class="brand-chip"><div class="dot-live"></div><span>SYSTEM ONLINE</span></div>
+  <div class="main-avatar-wrap">
+    <img src="avatar.png" alt="Logo" onerror="this.style.display='none'">
+  </div>
+  <div class="main-title">PRED<span>ICTOR</span></div>
+  <div class="main-badge-row">
+    <div class="mbadge cyan">LIVE API</div>
+    <div class="mbadge green">ALL GAMES</div>
+    <div class="mbadge gold">PRO VERSION</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-val">99.2%</div><div class="stat-label">Accuracy</div></div>
+    <div class="stat-card"><div class="stat-val">24/7</div><div class="stat-label">Online</div></div>
+    <div class="stat-card"><div class="stat-val">30S</div><div class="stat-label">Live</div></div>
+  </div>
+  <button class="btn-primary" onclick="goTo('payment')">⚡ ACTIVATE NOW</button>
+  <button class="btn-outline" onclick="window.open('https://t.me/+3mJrvqDZCbxhNzll','_blank')">📢 JOIN TELEGRAM CHANNEL</button>
+  <div class="divider-line"><span>ALREADY HAVE A KEY</span></div>
+  <button class="btn-ghost" onclick="goTo('keypage')">🔑 Enter Key Here</button>
+</div>
+
+<!-- PAYMENT -->
+<div id="payment" class="screen">
+  <div class="grid-bg"></div>
+  <div class="glow-orb orb1"></div>
+  <div class="pay-header">
+    <div class="pay-badge">✦ ONE-TIME PAYMENT</div>
+    <div class="pay-title">Get <span>PRO</span> Access</div>
+  
+  </div>
+  <div class="plan-card">
+    <div class="plan-top">
+      <div class="plan-name">PRO PLAN<small>LIFETIME ACCESS</small></div>
+      <div class="plan-price-wrap">
+        <div class="plan-mrp">₹1999</div>
+        <div class="plan-price">₹799</div>
+        <div class="plan-save">60% OFF</div>
+      </div>
+    </div>
+    <div class="plan-features">
+    
+      <div class="feature"><div class="fcheck">✓</div>All games</div>
+      <div class="feature"><div class="fcheck">✓</div>24/7 support</div>
+    </div>
+  </div>
+  <div class="qr-container">
+    <div class="qr-label">SCAN &amp; PAY</div>
     <div class="qr-frame">
-      <!-- APNA QR CODE IMAGE YAHAN: src="qr.png" -->
-      <img src="qr.png" alt="QR Code" onerror="this.outerHTML='<div style=\'width:100%;height:100%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:90px\'>📱</div>'">
-      <div class="qr-corner tl"></div>
-      <div class="qr-corner tr"></div>
-      <div class="qr-corner bl"></div>
-      <div class="qr-corner br"></div>
+      <img src="qr.png" alt="QR Code" onerror="this.outerHTML='<div style=\'width:180px;height:180px;background:#f3f4f6;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:70px\'>📱</div>'">
+      <div class="qr-corner-dot tl"></div>
+      <div class="qr-corner-dot tr"></div>
+      <div class="qr-corner-dot bl"></div>
+      <div class="qr-corner-dot br"></div>
     </div>
-    <!-- APNA UPI ID YAHAN DALO -->
-    <div class="upi-box">UPI ID: <span style="color:#ffd700">Mohitvrma1@fam</span></div>
-    <div class="pay-amount">PAY ₹799 TO ACTIVATE!</div>
-    <button class="btn-after-pay" onclick="show('keypage')">🔑 ENTER KEY AFTER PAYMENT</button>
-    <button class="btn-back" onclick="show('main')">← BACK</button>
-  </div>
-
-  <!-- KEY PAGE -->
-  <div id="keypage" class="screen">
-    <div class="key-scan"></div>
-    <div class="key-icon">🔑</div>
-    <div class="key-title">ENTER KEY</div>
-    <div class="key-sub">PASTE YOUR ACCESS KEY</div>
-    <input class="key-input" id="keyInput" type="text" placeholder="XXXX-XXXX-XXXX" autocomplete="off" />
-    <div class="key-error" id="keyError"></div>
-    <button class="btn-unlock" onclick="checkKey()">UNLOCK ▶</button>
-    <button class="btn-back" onclick="show('payment')" style="margin-top:12px">← BACK</button>
-  </div>
-
-  <!-- PREDICTOR SCREEN -->
-  <div id="predictor" class="screen">
-    <div class="scan-line"></div>
-    <div class="corner corner-tl"></div>
-    <div class="corner corner-tr"></div>
-    <div class="corner corner-bl"></div>
-    <div class="corner corner-br"></div>
-    <div class="pred-active-label"><div class="dot"></div>PREDICTOR ACTIVE</div>
-    <div class="period-label">CLICK ON CHECK TO SEE THE NEXT RESULT.....</div>
-    <div id="timerBox"
-style="
-color:#00ff88;
-font-family:'Orbitron',monospace;
-font-size:22px;
-font-weight:700;
-text-align:center;
-margin-bottom:12px;
-text-shadow:0 0 15px #00ff88;
-">
-⏱ Loading...
-</div>
-    <div id="timerBox" style="
-margin-bottom:10px;
-font-family:'Orbitron',monospace;
-color:#00ff88;
-font-size:18px;
-letter-spacing:2px;
-text-align:center;">
-
-</div>
-<input
-class="period-input"
-id="periodInput"
-type="text"
-readonly
-placeholder="Loading..."
-/>
-    <button class="btn-check" onclick="predict()">CHECK</button>
-    <div class="result-box" id="resultBox">
-      <div class="result-word" id="resultWord"></div>
-      <div class="result-period" id="resultPeriod"></div>
+    <div class="pay-upi-row">
+      <div>
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:2px;font-family:'JetBrains Mono',monospace">UPI ID</div>
+        <div class="upi-id-txt" id="upiIdText">mohitvrma1@upi</div>
+      </div>
+      <button class="copy-btn" onclick="copyUPI()">COPY</button>
     </div>
-    <button class="btn-reset" onclick="resetResult()" id="resetBtn" style="display:none">↺ CHECK AGAIN</button>
+  </div>
+  <div class="pay-amount-big">Pay <span>₹799</span> to activate</div>
+
+  <!-- KEY DELIVERY INFO -->
+  <div style="position:relative;z-index:1;width:100%;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.2);border-radius:14px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px">
+    <div style="font-size:20px;line-height:1;margin-top:2px">⚡</div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--green);letter-spacing:1px;margin-bottom:4px;font-family:'JetBrains Mono',monospace">INSTANT KEY DELIVERY</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">After payment,Key will appear in the box below. Take a screenshot or copy it..</div>
+    </div>
   </div>
 
+  <!-- KEY DISPLAY BOX -->
+  <div style="position:relative;z-index:1;width:100%;background:var(--bg3);border:1px solid rgba(167,139,250,0.3);border-radius:14px;padding:16px;margin-bottom:14px">
+    <div style="font-size:9px;color:var(--muted);letter-spacing:3px;font-family:'JetBrains Mono',monospace;margin-bottom:10px">YOUR KEY WILL COME HERE 👇</div>
+    <div style="width:100%;background:rgba(167,139,250,0.06);border:1px dashed rgba(167,139,250,0.3);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:rgba(167,139,250,0.35);letter-spacing:4px">XXXX-XXXX-XXXX</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;letter-spacing:1px">Key will be shown here</div>
+    </div>
+  </div>
+
+  <button class="btn-pay-done" onclick="goTo('keypage')">🔑 Done Paying? Enter Key →</button>
+  <button class="btn-back-sm" onclick="goTo('main')">← Go Back</button>
+</div>
+
+<!-- KEY PAGE -->
+<div id="keypage" class="screen">
+  <div class="grid-bg"></div>
+  <div class="glow-orb orb3"></div>
+  <div class="key-header">
+    <div class="key-icon-wrap">🔑</div>
+    <div class="key-title">Enter Access Key</div>
+    <div class="key-subtitle">PASTE YOUR KEY BELOW</div>
+    <div class="key-dots">
+      <div class="key-dot" id="kd1"></div>
+      <div class="key-dot" id="kd2"></div>
+      <div class="key-dot" id="kd3"></div>
+      <div class="key-dot" id="kd4"></div>
+    </div>
+  </div>
+  <div class="input-wrap">
+    <input id="keyInput" type="text" placeholder="XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" oninput="keyTyping()"/>
+  </div>
+  <div class="err-msg" id="keyError"></div>
+  <button class="btn-unlock" onclick="checkKey()">UNLOCK ACCESS →</button>
+  <button class="btn-back-sm" onclick="goTo('payment')" style="margin-top:14px;position:relative;z-index:1">← Back to Payment</button>
+</div>
+
+<!-- PREDICTOR -->
+<div id="predictor" class="screen">
+  <div class="grid-bg"></div>
+  <div class="glow-orb orb1"></div>
+  <div class="glow-orb orb2"></div>
+
+  <!-- TOPBAR -->
+  <div class="pred-topbar">
+    <div class="pred-status"><div class="d"></div>LIVE PREDICTION</div>
+    <div class="topbar-right">
+      <div class="pro-badge">✦ PRO</div>
+      <div class="session-badge">ACTIVE</div>
+    </div>
+  </div>
+
+  <!-- TIMER CARD -->
+  <div class="timer-card">
+    <div class="ring-wrap">
+      <svg viewBox="0 0 100 100" width="100" height="100">
+        <circle class="ring-bg" cx="50" cy="50" r="44"/>
+        <circle class="ring-fill" id="ringFill" cx="50" cy="50" r="44" stroke="var(--cyan)" stroke-dasharray="276" stroke-dashoffset="0"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-num" id="timerVal">--</div>
+        <div class="ring-sec">SEC</div>
+      </div>
+    </div>
+    <div class="timer-info">
+      <div class="timer-info-label">NEXT DRAW IN</div>
+      <div class="timer-info-title">WinGo 30S<br>Live Round</div>
+      <div class="timer-mini-stats">
+        <div class="tms"><div class="tms-val">30S</div><div class="tms-label">CYCLE</div></div>
+        <div class="tms"><div class="tms-val" id="miniAccuracy">99%</div><div class="tms-label">ACC</div></div>
+        <div class="tms"><div class="tms-val">24/7</div><div class="tms-label">LIVE</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD ROW -->
+  <div class="period-card">
+    <div>
+      <div class="period-card-left">CURRENT PERIOD</div>
+      <div class="period-val" id="periodInput">Fetching...</div>
+    </div>
+    <div class="period-dot"></div>
+  </div>
+
+  <!-- PREDICT BUTTON -->
+  <button class="btn-predict" onclick="predict()">⚡ PREDICT NOW <span>→</span></button>
+
+  <!-- RESULT -->
+  <div class="result-section" id="resultSection">
+    <div class="result-card" id="resultCard">
+      <div class="result-glow"></div>
+      <div class="result-top-row">
+        <div class="result-chip" id="resultChip">PREDICTION</div>
+        <div class="result-period-top" id="resultPeriod">PERIOD: ---</div>
+      </div>
+      <div class="result-word" id="resultWord">BIG</div>
+      <div class="result-word-sub" id="resultWordSub">PREDICTED RESULT</div>
+      <div class="result-stats-row">
+        <div class="rstat"><div class="rstat-val">99%</div><div class="rstat-label">CONFIDENCE</div></div>
+        <div class="rstat"><div class="rstat-val" id="resultAccuracy">HIGH</div><div class="rstat-label">ACCURACY</div></div>
+        <div class="rstat"><div class="rstat-val">★★★★★</div><div class="rstat-label">RATING</div></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-again" id="resetBtn" onclick="resetResult()">↺ PREDICT AGAIN</button>
+</div>
+
+<div class="toast" id="toast"></div>
 </div>
 
 <script>
-  // Auto splash → main
-  setTimeout(() => show('main'), 2800);
-
-  function show(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    window.scrollTo(0,0);
-  }
-
-  // KEY CHECK — change kar sakte ho
-  const ACCESS_KEY = 'rohitvrma123';
-
-  function checkKey() {
-    const val = document.getElementById('keyInput').value.trim().toLowerCase();
-    if (val === ACCESS_KEY.toLowerCase()) {
-      document.getElementById('keyError').textContent = '';
-      show('predictor');
-    } else {
-      document.getElementById('keyError').textContent = '✗ INVALID KEY — TRY AGAIN';
-      document.getElementById('keyInput').style.borderColor = '#ff4444';
-      setTimeout(() => {
-        document.getElementById('keyInput').style.borderColor = '#7c3aed';
-      }, 1000);
-    }
-  }
-
-  document.getElementById('keyInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') checkKey();
+// ─── PARTICLES ───
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
+for(let i=0;i<55;i++){
+  particles.push({
+    x:Math.random()*window.innerWidth,
+    y:Math.random()*window.innerHeight,
+    r:Math.random()*1.2+0.3,
+    dx:(Math.random()-0.5)*0.25,
+    dy:(Math.random()-0.5)*0.25,
+    a:Math.random()*0.5+0.1
   });
-
-  function predict() {
-    const period = document.getElementById('periodInput').value.trim();
-    if (!period) {
-      document.getElementById('periodInput').style.borderColor = '#ff4444';
-      setTimeout(() => document.getElementById('periodInput').style.borderColor = '#1a3d7a', 800);
-      return;
-    }
-    // Hash based on period number
-    let hash = 0;
-    for (let i = 0; i < period.length; i++) {
-      hash = ((hash << 5) - hash) + period.charCodeAt(i);
-      hash |= 0;
-    }
-    const isBig = (Math.abs(hash) % 2) === 0;
-    const box = document.getElementById('resultBox');
-    const word = document.getElementById('resultWord');
-    const pLabel = document.getElementById('resultPeriod');
-    box.className = 'result-box ' + (isBig ? 'big' : 'small');
-    word.textContent = isBig ? 'BIG' : 'SMALL';
-    pLabel.textContent = 'PERIOD: ' + period;
-    box.style.display = 'block';
-    document.getElementById('resetBtn').style.display = 'inline-block';
-  }
-
-  document.getElementById('periodInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') predict();
+}
+function drawParticles(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(34,211,238,${p.a})`;
+    ctx.fill();
+    p.x+=p.dx; p.y+=p.dy;
+    if(p.x<0||p.x>canvas.width) p.dx*=-1;
+    if(p.y<0||p.y>canvas.height) p.dy*=-1;
   });
-
- function resetResult() {
-  document.getElementById('resultBox').style.display = 'none';
-  document.getElementById('resetBtn').style.display = 'none';
+  requestAnimationFrame(drawParticles);
 }
-// AUTO PERIOD FETCH
+drawParticles();
 
-async function updatePeriod() {
-  try {
-    const response = await fetch(
-      "https://draw.ar-lottery01.com/WinGo/WinGo_30S.json?t=" + Date.now()
-    );
+// ─── SPLASH SEQUENCE ───
+let pct=0;
+const fillEl=document.getElementById('splashFill');
+const pctEl=document.getElementById('splashPct');
+const tick=setInterval(()=>{
+  pct+=Math.floor(Math.random()*5)+2;
+  if(pct>=100){pct=100;clearInterval(tick)}
+  fillEl.style.width=pct+'%';
+  pctEl.textContent=pct+'%';
+},75);
+setTimeout(()=>{document.getElementById('st1').classList.add('on')},700);
+setTimeout(()=>{document.getElementById('st2').classList.add('on')},1400);
+setTimeout(()=>{document.getElementById('st3').classList.add('on')},2000);
+setTimeout(()=>goTo('main'),2700);
 
-    const data = await response.json();
+// fade-in on show
+const splashEl=document.getElementById('splash');
+splashEl.classList.add('visible');
 
-    if (data.current && data.current.issueNumber) {
-      document.getElementById("periodInput").value =
-        data.current.issueNumber;
-    }
+// ─── NAVIGATION ───
+function goTo(id){
+  const cur=document.querySelector('.screen.active');
+  if(cur){
+    cur.style.opacity='0';
+    setTimeout(()=>{
+      cur.classList.remove('active');
+      cur.style.opacity='';
+      const next=document.getElementById(id);
+      next.classList.add('active');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>next.classList.add('visible')));
+      window.scrollTo(0,0);
+    },280);
+  } else {
+    document.getElementById(id).classList.add('active','visible');
+  }
+}
+// show splash on load
+document.getElementById('splash').classList.add('active','visible');
 
-  } catch (err) {
-    console.log("Period Fetch Error:", err);
+// ─── TOAST ───
+function showToast(msg,dur=1800){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ─── COPY UPI ───
+function copyUPI(){
+  const id=document.getElementById('upiIdText').textContent;
+  navigator.clipboard?.writeText(id).catch(()=>{});
+  const btn=document.querySelector('.copy-btn');
+  btn.textContent='✓ COPIED';
+  showToast('UPI ID copied!');
+  setTimeout(()=>btn.textContent='COPY',1800);
+}
+
+// ─── KEY INPUT DOTS ───
+function keyTyping(){
+  const v=document.getElementById('keyInput').value;
+  for(let i=1;i<=4;i++){
+    document.getElementById('kd'+i).classList.toggle('active',v.length>=(i*3));
   }
 }
 
-let currentEndTime = 0;
+// ─── KEY CHECK ───
+const ACCESS_KEY='rohitvrma123';
+function checkKey(){
+  const val=document.getElementById('keyInput').value.trim();
+  const err=document.getElementById('keyError');
+  if(val.toLowerCase()===ACCESS_KEY.toLowerCase()){
+    err.textContent='';
+    showToast('✓ Key verified!');
+    setTimeout(()=>goTo('predictor'),500);
+  } else {
+    err.textContent='✗ INVALID KEY — TRY AGAIN';
+    const inp=document.getElementById('keyInput');
+    inp.style.borderColor='var(--red)';
+    inp.style.boxShadow='0 0 0 3px rgba(248,113,113,0.15)';
+    // vibrate
+    if(navigator.vibrate) navigator.vibrate([80,40,80]);
+    setTimeout(()=>{inp.style.borderColor='var(--border)';inp.style.boxShadow='none'},1200);
+  }
+}
+document.getElementById('keyInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkKey()});
 
-async function updatePeriod() {
-  try {
-    const response = await fetch(
-      "https://draw.ar-lottery01.com/WinGo/WinGo_30S.json?t=" + Date.now()
-    );
-
-    const data = await response.json();
-
-    document.getElementById("periodInput").value =
-      data.current.issueNumber;
-
-    currentEndTime = data.current.endTime;
-
-  } catch (err) {
-    console.log(err);
+// ─── CONFETTI ───
+function launchConfetti(color){
+  const colors=['#22d3ee','#a78bfa','#f472b6','#4ade80','#fbbf24'];
+  for(let i=0;i<30;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.cssText=`
+      left:${20+Math.random()*60}%;
+      top:40%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${0.8+Math.random()*1}s;
+      animation-delay:${Math.random()*0.3}s;
+      width:${6+Math.random()*6}px;
+      height:${6+Math.random()*6}px;
+    `;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),2000);
   }
 }
 
-function startLiveTimer() {
+// ─── PREDICT ───
+function predict(){
+  const period=document.getElementById('periodInput').textContent.trim();
+  if(!period||period==='Fetching...'){
+    showToast('⏳ Period load ho raha hai...');
+    return;
+  }
+  let hash=0;
+  for(let i=0;i<period.length;i++){hash=((hash<<5)-hash)+period.charCodeAt(i);hash|=0}
+  const isBig=(Math.abs(hash)%2)===0;
+  const card=document.getElementById('resultCard');
+  const word=document.getElementById('resultWord');
+  const chip=document.getElementById('resultChip');
+  const pLabel=document.getElementById('resultPeriod');
+  const sub=document.getElementById('resultWordSub');
+  const acc=document.getElementById('resultAccuracy');
+  const section=document.getElementById('resultSection');
+  card.className='result-card '+(isBig?'big':'small');
+  word.textContent=isBig?'BIG':'SMALL';
+  chip.textContent=isBig?'📈 BIG PREDICTED':'📉 SMALL PREDICTED';
+  pLabel.textContent='PERIOD: '+period;
+  sub.textContent=isBig?'NEXT RESULT IS BIG':'NEXT RESULT IS SMALL';
+  acc.textContent='HIGH';
+  section.style.display='block';
+  document.getElementById('resetBtn').style.display='block';
+  launchConfetti();
+  if(navigator.vibrate) navigator.vibrate(isBig?[60,30,120]:[120]);
+}
 
-  setInterval(() => {
+function resetResult(){
+  document.getElementById('resultSection').style.display='none';
+  document.getElementById('resetBtn').style.display='none';
+}
 
-    if (!currentEndTime) return;
+// ─── TIMER RING ───
+const PERIOD_SECS=30;
+let currentEndTime=0;
 
-    const now = Date.now();
-    let remaining = Math.floor((currentEndTime - now) / 1000);
+async function updatePeriod(){
+  try{
+    const res=await fetch("https://draw.ar-lottery01.com/WinGo/WinGo_30S.json?t="+Date.now());
+    const data=await res.json();
+    document.getElementById('periodInput').textContent=data.current.issueNumber;
+    currentEndTime=data.current.endTime;
+  }catch(e){console.log(e)}
+}
 
-    if (remaining < 0) remaining = 0;
-
-    document.getElementById("timerBox").innerHTML =
-      "⏱ " + remaining + "s";
-
-  }, 250);
-
+function startTimer(){
+  const ringFill=document.getElementById('ringFill');
+  const timerVal=document.getElementById('timerVal');
+  const circ=2*Math.PI*44;
+  setInterval(()=>{
+    if(!currentEndTime)return;
+    let rem=Math.floor((currentEndTime-Date.now())/1000);
+    if(rem<0)rem=0;
+    timerVal.textContent=String(rem).padStart(2,'0');
+    const frac=rem/PERIOD_SECS;
+    ringFill.style.strokeDashoffset=circ*(1-frac);
+    if(rem<=5){ringFill.style.stroke='var(--red)';timerVal.style.color='var(--red)'}
+    else if(rem<=10){ringFill.style.stroke='var(--gold)';timerVal.style.color='var(--gold)'}
+    else{ringFill.style.stroke='var(--cyan)';timerVal.style.color='var(--cyan)'}
+  },250);
 }
 
 updatePeriod();
-startLiveTimer();
-
-setInterval(updatePeriod, 2000);
-
+startTimer();
+setInterval(updatePeriod,2000);
 </script>
 </body>
 </html>
