@@ -215,7 +215,7 @@ body{background:var(--bg);font-family:'Space Grotesk',sans-serif;display:flex;ju
 .result-card.big .result-chip{background:rgba(248,113,113,0.12);border-color:rgba(248,113,113,0.35);color:var(--red)}
 .result-card.small .result-chip{background:rgba(34,211,238,0.1);border-color:rgba(34,211,238,0.3);color:var(--cyan)}
 .result-period-top{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:1px}
-.result-word{font-family:'JetBrains Mono',monospace;font-size:72px;font-weight:700;letter-spacing:6px;line-height:1;margin-bottom:4px}
+.result-word{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:700;letter-spacing:4px;line-height:1;margin-bottom:4px}
 .result-card.big .result-word{color:var(--red)}
 .result-card.small .result-word{color:var(--cyan)}
 .result-word-sub{font-size:10px;letter-spacing:4px;font-family:'JetBrains Mono',monospace;margin-bottom:16px}
@@ -455,6 +455,25 @@ body{background:var(--bg);font-family:'Space Grotesk',sans-serif;display:flex;ju
   </div>
 
   <button class="btn-again" id="resetBtn" onclick="resetResult()">↺ PREDICT AGAIN</button>
+
+  <!-- REGISTER BUTTON -->
+  <div id="registerSection" style="display:block;position:relative;z-index:1;width:100%;margin-top:12px">
+    <div style="width:100%;display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <span style="font-size:9px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace">PLAY ON PLATFORM</span>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+    <button onclick="window.open('https://www.6club88.com/#/register?invitationCode=541315284675','_blank')" style="position:relative;z-index:1;width:100%;background:linear-gradient(135deg,#a78bfa,#6d28d9);color:#fff;font-size:15px;font-weight:700;letter-spacing:2px;padding:16px;border:none;border-radius:16px;cursor:pointer;transition:all 0.25s;font-family:'Space Grotesk',sans-serif;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:8px"
+      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 30px rgba(167,139,250,0.4)'"
+      onmouseout="this.style.transform='none';this.style.boxShadow='none'"
+      onmousedown="this.style.transform='scale(0.97)'"
+      onmouseup="this.style.transform='translateY(-2px)'">
+      <span style="font-size:18px">🎮</span> REGISTER NOW
+      <span style="opacity:0.7;font-size:13px">→</span>
+    </button>
+    <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:1px">Register & play to win </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -606,9 +625,44 @@ function predict(){
     showToast('⏳ Period load ho raha hai...');
     return;
   }
-  let hash=0;
-  for(let i=0;i<period.length;i++){hash=((hash<<5)-hash)+period.charCodeAt(i);hash|=0}
-  const isBig=(Math.abs(hash)%2)===0;
+  // === STREAK-AWARE LOGIC — natural 3-4 streaks like real platform ===
+  // Step 1: FNV-1a on full period string
+  let h=2166136261>>>0;
+  for(let i=0;i<period.length;i++){h^=period.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+  h^=h<<13;h>>>=0;h^=h>>17;h^=h<<5;h>>>=0;
+  let h2=1469598103>>>0;
+  for(let i=period.length-1;i>=0;i--){h2^=period.charCodeAt(i)*(i+7);h2=Math.imul(h2,2246822519)>>>0;}
+  h2^=h2<<15;h2>>>=0;h2^=h2>>13;h2^=h2<<7;h2>>>=0;
+  const seed=(h^h2)>>>0;
+
+  // Step 2: Check last 2 periods to detect streak
+  const periodNum=parseInt(period.replace(/\D/g,''))||0;
+  function getResult(pNum){
+    const ps=String(pNum);
+    let a=2166136261>>>0;
+    for(let i=0;i<ps.length;i++){a^=ps.charCodeAt(i);a=Math.imul(a,16777619)>>>0;}
+    a^=a<<13;a>>>=0;a^=a>>17;a^=a<<5;a>>>=0;
+    let b=1469598103>>>0;
+    for(let i=ps.length-1;i>=0;i--){b^=ps.charCodeAt(i)*(i+7);b=Math.imul(b,2246822519)>>>0;}
+    b^=b<<15;b>>>=0;b^=b>>13;b^=b<<7;b>>>=0;
+    return ((a^b)>>>0)%10>=5;
+  }
+  const prev1=getResult(periodNum-1);
+  const prev2=getResult(periodNum-2);
+  const streakCount=(prev1===prev2)?2:1;
+  const streakDir=prev1; // true=Big streak, false=Small streak
+
+  // Step 3: Streak continuation logic
+  // If 2 in a row already → 55% chance to continue (makes 3-4 streaks common)
+  // If 1 in a row → 45% chance to continue (normal flow)
+  let continueStreak;
+  const r=seed%100;
+  if(streakCount>=2){
+    continueStreak=r<55; // 55% continue → 3rd/4th in streak
+  } else {
+    continueStreak=r<45; // 45% continue → keeps it non-alternating
+  }
+  const isBig=continueStreak?streakDir:!streakDir;
   const card=document.getElementById('resultCard');
   const word=document.getElementById('resultWord');
   const chip=document.getElementById('resultChip');
