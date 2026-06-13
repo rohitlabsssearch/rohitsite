@@ -456,6 +456,15 @@ body{background:var(--bg);font-family:'Space Grotesk',sans-serif;display:flex;ju
     <div class="period-dot"></div>
   </div>
 
+  <!-- LIVE HISTORY -->
+  <div style="position:relative;z-index:1;width:100%;margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:9px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace">LIVE HISTORY</span>
+      <span id="historyStatus" style="font-size:9px;color:var(--cyan);font-family:'JetBrains Mono',monospace;letter-spacing:1px">LOADING...</span>
+    </div>
+    <div id="historyList" style="display:flex;flex-direction:column;gap:3px"></div>
+  </div>
+
   <!-- PREDICT BUTTON -->
   <button class="btn-predict" onclick="predict()">⚡ PREDICT NOW <span>→</span></button>
 
@@ -723,6 +732,42 @@ async function updatePeriod(){
   }catch(e){console.log(e)}
 }
 
+async function fetchHistory(){
+  try{
+    const res=await fetch("https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json?ts="+Date.now());
+    const data=await res.json();
+    const list=document.getElementById('historyList');
+    const status=document.getElementById('historyStatus');
+    const records=data.data?.list||[];
+    if(!records.length){status.textContent='NO DATA';return;}
+    status.textContent='LIVE ●';
+    list.innerHTML='';
+    records.slice(0,8).forEach(r=>{
+      const num=parseInt(r.number);
+      const isBig=num>=5;
+      const period=String(r.issueNumber).slice(-6);
+      const isViolet=r.color.includes('violet');
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:5px 10px;';
+      row.innerHTML=`
+        <span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace">${period}</span>
+        <span style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${isBig?'#22c55e':'#ef4444'}">${num}</span>
+        <span style="font-size:10px;font-weight:700;letter-spacing:1px;color:${isBig?'#22c55e':'#ef4444'};font-family:'Space Grotesk',sans-serif">${isBig?'BIG':'SMALL'}</span>
+        <div style="display:flex;gap:3px;align-items:center">
+          <span style="width:8px;height:8px;border-radius:50%;background:${isBig?'#22c55e':'#ef4444'};display:inline-block"></span>
+          ${isViolet?`<span style="width:8px;height:8px;border-radius:50%;background:#a855f7;display:inline-block"></span>`:''}
+        </div>
+      `;
+      list.appendChild(row);
+    });
+  }catch(e){
+    document.getElementById('historyStatus').textContent='OFFLINE';
+    console.log(e);
+  }
+}
+
+let lastPeriod='';
+
 function startTimer(){
   const ringFill=document.getElementById('ringFill');
   const timerVal=document.getElementById('timerVal');
@@ -737,11 +782,16 @@ function startTimer(){
     if(rem<=5){ringFill.style.stroke='var(--red)';timerVal.style.color='var(--red)'}
     else if(rem<=10){ringFill.style.stroke='var(--gold)';timerVal.style.color='var(--gold)'}
     else{ringFill.style.stroke='var(--cyan)';timerVal.style.color='var(--cyan)'}
+    // Jaise hi timer 0 ho — 2 sec baad history refresh
+    if(rem===0){
+      setTimeout(()=>{fetchHistory();updatePeriod();},2000);
+    }
   },250);
 }
 
 updatePeriod();
 startTimer();
+fetchHistory();
 setInterval(updatePeriod,2000);
 </script>
 </body>
